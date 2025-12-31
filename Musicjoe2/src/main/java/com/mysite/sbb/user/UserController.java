@@ -5,11 +5,10 @@ import com.mysite.sbb.music.dto.MusicListDto;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.RequestParam;
 import lombok.RequiredArgsConstructor;
 import java.security.Principal;
 import java.util.List;
@@ -23,31 +22,14 @@ public class UserController {
     private final MusicService musicService;
 
     @GetMapping("/login")
-    public String login() {
-        return "user/login";
-    }
+    public String login() { return "user/login"; }
 
     @GetMapping("/signup")
-    public String signup(UserCreateForm userCreateForm) {
-        return "user/signup";
-    }
+    public String signup(UserCreateForm userCreateForm) { return "user/signup"; }
 
     @PostMapping("/signup")
-    public String signup(@Valid UserCreateForm userCreateForm, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return "user/signup";
-        }
-        if (!userCreateForm.getPassword1().equals(userCreateForm.getPassword2())) {
-            bindingResult.rejectValue("password2", "passwordInCorrect", "パスワードが一致しません。");
-            return "user/signup";
-        }
-        try {
-            userService.create(userCreateForm.getUsername(), userCreateForm.getEmail(), userCreateForm.getPassword1());
-        } catch (Exception e) {
-            e.printStackTrace();
-            bindingResult.reject("signupFailed", "既に登録されているユーザー名、またはメールアドレスです。");
-            return "user/signup";
-        }
+    public String signup(UserCreateForm userCreateForm) {
+        userService.create(userCreateForm.getUsername(), userCreateForm.getEmail(), userCreateForm.getPassword1());
         return "redirect:/user/login";
     }
 
@@ -61,10 +43,21 @@ public class UserController {
         return "user/mypage";
     }
 
-    // 情報修正ページの追加
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/modify")
-    public String modify() {
+    public String modify(Model model, Principal principal) {
+        SiteUser user = this.userService.getUser(principal.getName());
+        model.addAttribute("user", user);
         return "user/modify";
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/modify")
+    public String modify(@RequestParam("email") String email, 
+                         @RequestParam(value="password", required=false) String password, 
+                         Principal principal) {
+        SiteUser user = this.userService.getUser(principal.getName());
+        this.userService.modify(user, email, password);
+        return "redirect:/user/mypage";
     }
 }

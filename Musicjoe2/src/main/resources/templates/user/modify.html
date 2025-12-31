@@ -8,13 +8,23 @@
         <form th:action="@{/user/modify}" method="post">
             <div style="margin-bottom: 24px;">
                 <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #1D1D1F;">ユーザー名</label>
-                <input type="text" th:value="${#authentication.name}" readonly 
+                <input type="text" th:value="${user.username}" readonly 
                        style="width: 100%; padding: 14px; border: 1px solid #E5E5E7; border-radius: 12px; background: #F5F5F7; color: #86868B;">
             </div>
-            <div style="background: #F5F5F7; padding: 20px; border-radius: 12px; margin-bottom: 32px;">
-                <p style="margin: 0; font-size: 14px; color: #86868B; line-height: 1.6;">パスワード変更やメールアドレスの更新機能は、現在メンテナンス中です。完了までしばらくお待ちください。</p>
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 600;">メールアドレス</label>
+                <input type="email" name="email" th:value="${user.email}" required
+                       style="width: 100%; padding: 14px; border: 1px solid #E5E5E7; border-radius: 12px; outline: none;">
             </div>
-            <button type="button" onclick="history.back()" style="width: 100%; padding: 14px; border: none; border-radius: 12px; background: #007AFF; color: white; font-weight: 700; cursor: pointer;">戻る</button>
+            <div style="margin-bottom: 32px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 600;">新しいパスワード (変更する場合のみ)</label>
+                <input type="password" name="password" placeholder="再度設定する場合のみ入力"
+                       style="width: 100%; padding: 14px; border: 1px solid #E5E5E7; border-radius: 12px; outline: none;">
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button type="button" onclick="history.back()" style="flex: 1; padding: 14px; border: none; border-radius: 12px; background: #F5F5F7; color: #333; font-weight: 700; cursor: pointer;">キャンセル</button>
+                <button type="submit" style="flex: 2; padding: 14px; border: none; border-radius: 12px; background: #007AFF; color: white; font-weight: 700; cursor: pointer;">保存する</button>
+            </div>
         </form>
     </div>
 </section>

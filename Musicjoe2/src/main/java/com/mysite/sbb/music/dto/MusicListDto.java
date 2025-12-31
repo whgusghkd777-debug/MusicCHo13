@@ -18,4 +18,5 @@ public class MusicListDto {
     private String thumbnailUrl;
     private LocalDateTime createDate;
     private int voteCount;
+    private String filePath;
 }

@@ -1,42 +1,29 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" 
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
-      layout:decorate="~{layout}">
+<html xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout}">
 <section layout:fragment="content">
-    <div class="container my-5">
-        <div style="text-align: center; margin-bottom: 50px;">
-            <h1 style="font-weight: 800; font-size: 2.5rem;">殿堂入りランキング</h1>
-            <p style="color: #86868B;">最も多くの「いいね」を集めた楽曲トップ10です。</p>
-        </div>
-
-        <div class="row row-cols-1 row-cols-md-3 g-4">
-            <div class="col" th:each="music, status : ${rankingList}">
-                <a th:href="@{|/music/detail/${music.id}|}" style="text-decoration: none; color: inherit; display: block; height: 100%;">
-                    <div class="card h-100 shadow-sm border-0 ranking-card" style="border-radius: 20px; overflow: hidden; background: white; transition: 0.3s;">
-                        <div style="position: relative; height: 200px; background: #eee;">
-                            <img th:src="${music.thumbnailUrl != null && music.thumbnailUrl != '' ? music.thumbnailUrl : 'https://placehold.co/600x400?text=No+Image'}" 
-                                 style="width: 100%; height: 100%; object-fit: cover;"
-                                 onerror="this.src='https://placehold.co/600x400?text=No+Image';">
-                            <div style="position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.8); color: white; padding: 4px 12px; border-radius: 50px; font-weight: 800;">
-                                # <span th:text="${status.count}">1</span>
-                            </div>
-                        </div>
-                        <div class="card-body" style="padding: 20px;">
-                            <h5 class="card-title text-truncate" th:text="${music.title}" style="font-weight: 700; color: #1d1d1f;"></h5>
-                            <p class="card-text text-muted" th:text="${music.artist}" style="font-size: 0.9rem;"></p>
-                            <div class="d-flex justify-content-between align-items-center mt-3">
-                                <span class="btn-play-label">再生する</span>
-                                <span style="color: #FF3B30; font-weight: 700;">❤️ <span th:text="${music.voteCount}">0</span></span>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        </div>
+    <div style="margin-bottom: 40px;">
+        <h1 style="font-weight: 800; font-size: 2.2rem;">人気ランキング</h1>
+        <p style="color: #86868B;">推薦数が多い順に表示されます。</p>
     </div>
-    <style>
-        .ranking-card:hover { transform: translateY(-8px); box-shadow: 0 12px 24px rgba(0,0,0,0.1) !important; }
-        .btn-play-label { background: #007AFF; color: white; padding: 6px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; }
-    </style>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px;">
+        <a th:each="music, loop : ${musicList}" th:href="@{|/music/detail/${music.id}|}" style="text-decoration: none; color: inherit;">
+            <div style="background: white; border-radius: 20px; overflow: hidden; border: 1px solid rgba(0,0,0,0.05); position: relative;">
+                <div style="position: absolute; top: 10px; left: 10px; background: rgba(0,122,255,0.9); color: white; padding: 5px 12px; border-radius: 10px; font-weight: 700; z-index: 10;">
+                    TOP <span th:text="${loop.count}"></span>
+                </div>
+                <div style="width: 100%; height: 180px; background: #000;">
+                    <img th:if="${music.thumbnailUrl}" th:src="${music.thumbnailUrl}" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div style="padding: 24px;">
+                    <h3 th:text="${music.title}" style="margin: 0 0 8px 0; font-weight: 700;"></h3>
+                    <p th:text="${music.artist}" style="color: #86868B; margin-bottom: 20px;"></p>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #FF3B30; font-weight: 700;">❤️ <span th:text="${music.voteCount}"></span></span>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
 </section>
 </html>
