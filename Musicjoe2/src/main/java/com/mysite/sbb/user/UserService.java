@@ -3,11 +3,13 @@ package com.mysite.sbb.user;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
 public class UserService {
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -16,25 +18,28 @@ public class UserService {
         user.setUsername(username);
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
-        if ("admin".equals(username)) {
-            user.setRole(UserRole.ADMIN);
-        } else {
-            user.setRole(UserRole.USER);
-        }
         this.userRepository.save(user);
         return user;
     }
 
     public SiteUser getUser(String username) {
-        return userRepository.findByUsername(username).orElse(null);
+        Optional<SiteUser> siteUser = this.userRepository.findByUsername(username);
+        if (siteUser.isPresent()) {
+            return siteUser.get();
+        } else {
+            throw new RuntimeException("siteuser not found");
+        }
     }
 
-    // 会員情報修正ロジックの追加
+    @Transactional
     public void modify(SiteUser user, String email, String password) {
-        user.setEmail(email);
+        SiteUser siteUser = this.userRepository.findById(user.getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        siteUser.setEmail(email);
         if (password != null && !password.isEmpty()) {
-            user.setPassword(passwordEncoder.encode(password));
+            siteUser.setPassword(passwordEncoder.encode(password));
         }
-        this.userRepository.save(user);
+        this.userRepository.save(siteUser);
     }
 }

@@ -13,8 +13,13 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        /* HTML側で /upload/ を使用しているため、ここも /upload/** に合わせます */
+        // パス区切り文字の互換性を確保
+        String path = uploadPath.replace("\\", "/");
+        if (!path.endsWith("/")) {
+            path += "/";
+        }
+
         registry.addResourceHandler("/upload/**")
-                .addResourceLocations("file:///" + uploadPath + "/");
+                .addResourceLocations("file:" + path); 
     }
 }

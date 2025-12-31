@@ -17,7 +17,7 @@ public class SiteUser {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
-    // 직접 Getter/Setter를 만들어서 롬복 에러를 방지합니다.
+    public Long getId() { return id; } // idのGetterを追加
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
     public String getPassword() { return password; }

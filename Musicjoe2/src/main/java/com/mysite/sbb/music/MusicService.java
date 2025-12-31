@@ -20,6 +20,7 @@ public class MusicService {
     private final MusicRepository musicRepository;
     private final AnswerRepository answerRepository;
 
+    // 既存のDTO変換ロジックを維持
     private List<MusicListDto> convertToDtoList(List<Music> musicList) {
         return musicList.stream()
                 .map(music -> new MusicListDto(
@@ -49,8 +50,10 @@ public class MusicService {
         return convertToDtoList(musicList);
     }
 
+    // 詳細ページ用のエンティティ返却メソッド
     public Music getMusic(Long id) {
-        return this.musicRepository.findById(id).orElseThrow();
+        return this.musicRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Music not found"));
     }
 
     @Transactional
