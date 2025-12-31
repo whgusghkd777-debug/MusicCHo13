@@ -22,7 +22,6 @@ public class UserController {
     @GetMapping("/mypage")
     public String myPage(Model model, Principal principal) {
         SiteUser user = this.userService.getUser(principal.getName());
-        // MusicServiceの修正により、この行のエラーが解消されます
         List<MusicListDto> myMusicList = this.musicService.getMyMusicList(user);
         model.addAttribute("user", user);
         model.addAttribute("musicList", myMusicList);
@@ -55,5 +54,19 @@ public class UserController {
     @GetMapping("/signup")
     public String signup(UserCreateForm userCreateForm) {
         return "user/signup";
+    }
+
+    // 会員登録処理を追加し、成功後にメインページへリダイレクト
+    @PostMapping("/signup")
+    public String signup(UserCreateForm userCreateForm, Model model) {
+        try {
+            this.userService.create(userCreateForm.getUsername(), 
+                                    userCreateForm.getEmail(), 
+                                    userCreateForm.getPassword1());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "user/signup";
+        }
+        return "redirect:/";
     }
 }

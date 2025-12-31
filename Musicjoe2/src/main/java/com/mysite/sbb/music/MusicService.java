@@ -34,7 +34,6 @@ public class MusicService {
                 .collect(Collectors.toList());
     }
 
-    // 推薦数が多い順にソートして返却するメソッドを追加
     public List<MusicListDto> getRankingList() {
         List<Music> musicList = this.musicRepository.findAll();
         return musicList.stream()
