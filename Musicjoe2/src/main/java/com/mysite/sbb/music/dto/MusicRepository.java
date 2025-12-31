@@ -6,12 +6,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
-/* 修正：第2引数を Long に変更してID型を統一 */
 public interface MusicRepository extends JpaRepository<Music, Long> {
-    List<Music> findAllByOrderByCreateDateDesc();
-    
+    // ユーザー別の投稿リストを取得するためのメソッド
     List<Music> findByAuthorOrderByCreateDateDesc(SiteUser author);
+    
+    List<Music> findAllByOrderByCreateDateDesc();
 
-    @Query("SELECT m FROM Music m LEFT JOIN m.voter v GROUP BY m ORDER BY COUNT(v) DESC")
+    @Query(value = "SELECT * FROM music ORDER BY (SELECT COUNT(*) FROM music_voter WHERE music_id = music.id) DESC LIMIT 10", nativeQuery = true)
     List<Music> findTopRanking();
 }

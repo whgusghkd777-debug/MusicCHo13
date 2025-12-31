@@ -19,17 +19,12 @@ public class SecurityConfig {
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests((authorize) -> authorize
-                /* 静的リソースとアップロードファイルへのアクセスを許可 */
                 .requestMatchers(new AntPathRequestMatcher("/css/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/js/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/images/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/files/**")).permitAll() // 修正：保存先パスに合わせる
-                
-                /* 管理者権限が必要なパス */
+                .requestMatchers(new AntPathRequestMatcher("/upload/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasRole("ADMIN")
                 .requestMatchers(new AntPathRequestMatcher("/music/delete/**")).hasRole("ADMIN")
-                
-                /* その他のパスはすべて許可 */
                 .requestMatchers(new AntPathRequestMatcher("/**")).permitAll())
             
             .csrf((csrf) -> csrf.disable())
@@ -37,11 +32,11 @@ public class SecurityConfig {
             
             .formLogin((login) -> login
                 .loginPage("/user/login")
-                .defaultSuccessUrl("/music/list")) // 修正：/list から /music/list へ
+                .defaultSuccessUrl("/music/list")) // /list -> /music/list に修正
             
             .logout((logout) -> logout
                 .logoutRequestMatcher(new AntPathRequestMatcher("/user/logout"))
-                .logoutSuccessUrl("/music/list") // 修正：/list から /music/list へ
+                .logoutSuccessUrl("/music/list") // /list -> /music/list に修正
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID"));
         

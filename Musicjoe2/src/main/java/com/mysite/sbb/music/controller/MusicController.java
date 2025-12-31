@@ -27,27 +27,42 @@ public class MusicController {
     @Value("${file.upload-path}")
     private String uploadPath;
 
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/create")
+    public String create() {
+        return "music_form"; 
+    }
+
+    @GetMapping("/list")
+    public String list(Model model) {
+        model.addAttribute("musicList", this.musicService.getList());
+        return "music_list";
+    }
+
+    @GetMapping("/ranking")
+    public String ranking(Model model) {
+        model.addAttribute("musicList", this.musicService.getRankingList());
+        return "ranking";
+    }
+
     @GetMapping("/detail/{id}")
     public String detail(Model model, @PathVariable("id") Long id) {
         Music music = this.musicService.getMusic(id);
         model.addAttribute("music", music);
-        // YouTubeのIDを抽出して渡す
         model.addAttribute("youtubeId", this.musicService.extractYoutubeId(music.getUrl()));
         return "music_detail";
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/delete/{id}")
-    public String delete(@PathVariable("id") Long id) {
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/answer/create/{id}")
+    public String createAnswer(@PathVariable("id") Long id, @RequestParam("content") String content, Principal principal) {
         Music music = this.musicService.getMusic(id);
-        if (music.getFilePath() != null) {
-            File file = new File(uploadPath + "/" + music.getFilePath());
-            if (file.exists()) file.delete();
-        }
-        this.musicService.delete(music);
-        return "redirect:/music/list";
+        SiteUser author = this.userService.getUser(principal.getName());
+        this.musicService.createAnswer(music, content, author);
+        return String.format("redirect:/music/detail/%s", id);
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/create")
     public String create(@RequestParam("title") String title, @RequestParam("artist") String artist,
                          @RequestParam("url") String url, @RequestParam("content") String content,
@@ -59,6 +74,14 @@ public class MusicController {
             file.transferTo(new File(uploadPath + "/" + fileName));
         }
         this.musicService.create(title, artist, url, content, fileName, author);
+        return "redirect:/music/list";
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/delete/{id}")
+    public String musicDelete(@PathVariable("id") Long id) {
+        Music music = this.musicService.getMusic(id);
+        this.musicService.delete(music);
         return "redirect:/music/list";
     }
 }
