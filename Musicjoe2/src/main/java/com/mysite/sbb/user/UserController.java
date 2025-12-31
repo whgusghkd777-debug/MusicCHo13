@@ -22,6 +22,7 @@ public class UserController {
     @GetMapping("/mypage")
     public String myPage(Model model, Principal principal) {
         SiteUser user = this.userService.getUser(principal.getName());
+        // MusicServiceの修正により、この行のエラーが解消されます
         List<MusicListDto> myMusicList = this.musicService.getMyMusicList(user);
         model.addAttribute("user", user);
         model.addAttribute("musicList", myMusicList);

@@ -20,7 +20,6 @@ public class MusicService {
     private final MusicRepository musicRepository;
     private final AnswerRepository answerRepository;
 
-    // 既存のDTO変換ロジックを維持
     private List<MusicListDto> convertToDtoList(List<Music> musicList) {
         return musicList.stream()
                 .map(music -> new MusicListDto(
@@ -35,14 +34,19 @@ public class MusicService {
                 .collect(Collectors.toList());
     }
 
-    public List<MusicListDto> getList() {
-        List<Music> musicList = this.musicRepository.findAllByOrderByCreateDateDesc();
-        return convertToDtoList(musicList);
-    }
-
+    // 推薦数が多い順にソートして返却するメソッドを追加
     public List<MusicListDto> getRankingList() {
-        List<Music> musicList = this.musicRepository.findTopRanking();
-        return convertToDtoList(musicList);
+        List<Music> musicList = this.musicRepository.findAll();
+        return musicList.stream()
+                .sorted((m1, m2) -> Integer.compare(
+                    m2.getVoter() != null ? m2.getVoter().size() : 0, 
+                    m1.getVoter() != null ? m1.getVoter().size() : 0))
+                .map(music -> new MusicListDto(
+                    music.getId(), music.getTitle(), music.getArtist(), 
+                    music.getUrl(), music.getThumbnailUrl(), music.getCreateDate(),
+                    music.getVoter() != null ? music.getVoter().size() : 0, 
+                    music.getFilePath()))
+                .collect(Collectors.toList());
     }
 
     public List<MusicListDto> getMyMusicList(SiteUser author) {
@@ -50,20 +54,23 @@ public class MusicService {
         return convertToDtoList(musicList);
     }
 
-    // 詳細ページ用のエンティティ返却メソッド
+    public List<MusicListDto> getList() {
+        return convertToDtoList(this.musicRepository.findAllByOrderByCreateDateDesc());
+    }
+
     public Music getMusic(Long id) {
         return this.musicRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Music not found"));
     }
 
     @Transactional
-    public void create(String title, String artist, String url, String content, String filePath, SiteUser author) {
+    public void create(String title, String artist, String url, String content, String fileName, SiteUser author) {
         Music music = new Music();
         music.setTitle(title);
         music.setArtist(artist);
         music.setUrl(url);
         music.setContent(content);
-        music.setFilePath(filePath);
+        music.setFilePath(fileName);
         music.setAuthor(author);
         music.setCreateDate(LocalDateTime.now());
         
@@ -75,13 +82,9 @@ public class MusicService {
     }
 
     @Transactional
-    public void createAnswer(Music music, String content, SiteUser author) {
-        Answer answer = new Answer();
-        answer.setContent(content);
-        answer.setCreateDate(LocalDateTime.now());
-        answer.setMusic(music);
-        answer.setAuthor(author);
-        this.answerRepository.save(answer);
+    public void vote(Music music, SiteUser siteUser) {
+        music.getVoter().add(siteUser);
+        this.musicRepository.save(music);
     }
 
     public String extractYoutubeId(String url) {
@@ -93,9 +96,13 @@ public class MusicService {
     }
 
     @Transactional
-    public void vote(Music music, SiteUser siteUser) {
-        music.getVoter().add(siteUser);
-        this.musicRepository.save(music);
+    public void createAnswer(Music music, String content, SiteUser author) {
+        Answer answer = new Answer();
+        answer.setContent(content);
+        answer.setCreateDate(LocalDateTime.now());
+        answer.setMusic(music);
+        answer.setAuthor(author);
+        this.answerRepository.save(answer);
     }
 
     @Transactional

@@ -9,9 +9,11 @@
             <div>
                 <h2 th:text="${music.title}" style="font-weight: 800; margin-bottom: 12px; font-size: 2rem;"></h2>
                 <div style="display: flex; align-items: center; gap: 15px;">
-                    <span style="color: #FF3B30; font-size: 1.1rem; font-weight: 700; background: #FFF5F5; padding: 5px 12px; border-radius: 20px;">
-                        ❤️ <span th:text="${#lists.size(music.voter)}">0</span>
-                    </span>
+                    <a th:href="@{|/music/vote/${music.id}|}" style="text-decoration: none;">
+                        <span style="color: #FF3B30; font-size: 1.1rem; font-weight: 700; background: #FFF5F5; padding: 5px 12px; border-radius: 20px; cursor: pointer;">
+                            ❤️ <span th:text="${#lists.size(music.voter)}">0</span>
+                        </span>
+                    </a>
                     <span sec:authorize="hasRole('ADMIN')" 
                           style="background: #F2F2F7; color: #8E8E93; padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: 1px solid #E5E5EA;">
                         管理者モード
@@ -20,9 +22,9 @@
             </div>
             <div sec:authorize="hasRole('ADMIN')">
                 <a th:href="@{|/music/delete/${music.id}|}" 
-                   onclick="return confirm('この楽曲를 削除しますか？')"
+                   onclick="return confirm('この楽曲を削除しますか？')"
                    style="display: inline-block; padding: 12px 24px; background: #FF3B30; color: white; border-radius: 12px; text-decoration: none; font-weight: 700;">
-                   楽曲削除
+                    楽曲削除
                 </a>
             </div>
         </div>
@@ -30,6 +32,14 @@
         <div th:if="${youtubeId}" style="aspect-ratio: 16/9; width: 100%; border-radius: 24px; overflow: hidden; background: #000; margin-bottom: 40px;">
             <iframe th:src="@{|https://www.youtube.com/embed/${youtubeId}|}" 
                     style="width: 100%; height: 100%; border: none;" allowfullscreen></iframe>
+        </div>
+
+        <div th:if="${music.filePath}" style="margin-bottom: 40px; background: #F2F2F7; padding: 20px; border-radius: 20px;">
+            <p style="font-weight: 600; margin-bottom: 10px; font-size: 0.9rem;">アップロードされた音源</p>
+            <audio controls style="width: 100%;">
+                <source th:src="@{|/upload/${music.filePath}|}" type="audio/mpeg">
+                お使いのブラウザはオーディオ再生に対応していません。
+            </audio>
         </div>
 
         <div style="background: #FFFFFF; padding: 30px; border-radius: 20px; border: 1px solid #F2F2F7; margin-bottom: 50px;">

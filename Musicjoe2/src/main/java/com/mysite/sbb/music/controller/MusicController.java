@@ -27,39 +27,19 @@ public class MusicController {
     @Value("${file.upload-path}")
     private String uploadPath;
 
-    @PreAuthorize("isAuthenticated()")
-    @GetMapping("/create")
-    public String create() {
-        return "music_form"; 
-    }
-
-    @GetMapping("/list")
-    public String list(Model model) {
-        model.addAttribute("musicList", this.musicService.getList());
-        return "music_list";
-    }
-
-    @GetMapping("/ranking")
-    public String ranking(Model model) {
-        model.addAttribute("musicList", this.musicService.getRankingList());
-        return "ranking";
-    }
-
     @GetMapping("/detail/{id}")
     public String detail(Model model, @PathVariable("id") Long id) {
         Music music = this.musicService.getMusic(id);
         model.addAttribute("music", music);
-        model.addAttribute("youtubeId", this.musicService.extractYoutubeId(music.getUrl()));
+        String videoId = this.musicService.extractYoutubeId(music.getUrl());
+        model.addAttribute("youtubeId", videoId);
         return "music_detail";
     }
 
     @PreAuthorize("isAuthenticated()")
-    @PostMapping("/answer/create/{id}")
-    public String createAnswer(@PathVariable("id") Long id, @RequestParam("content") String content, Principal principal) {
-        Music music = this.musicService.getMusic(id);
-        SiteUser author = this.userService.getUser(principal.getName());
-        this.musicService.createAnswer(music, content, author);
-        return String.format("redirect:/music/detail/%s", id);
+    @GetMapping("/create")
+    public String create() {
+        return "music_form";
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -70,11 +50,37 @@ public class MusicController {
         SiteUser author = this.userService.getUser(principal.getName());
         String fileName = null;
         if (!file.isEmpty()) {
+            File uploadDir = new File(uploadPath);
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
             fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
             file.transferTo(new File(uploadPath + "/" + fileName));
         }
         this.musicService.create(title, artist, url, content, fileName, author);
         return "redirect:/music/list";
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/vote/{id}")
+    public String musicVote(Principal principal, @PathVariable("id") Long id) {
+        Music music = this.musicService.getMusic(id);
+        SiteUser siteUser = this.userService.getUser(principal.getName());
+        this.musicService.vote(music, siteUser);
+        return String.format("redirect:/music/detail/%s", id);
+    }
+
+    @GetMapping("/ranking")
+    public String ranking(Model model) {
+        // getRankingList()を呼び出して推薦順のデータを渡す
+        model.addAttribute("musicList", this.musicService.getRankingList()); 
+        return "ranking";
+    }
+
+    @GetMapping("/list")
+    public String list(Model model) {
+        model.addAttribute("musicList", this.musicService.getList());
+        return "music_list";
     }
 
     @PreAuthorize("hasRole('ADMIN')")
